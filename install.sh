@@ -34,7 +34,47 @@ if [ "$NODE_VERSION" -lt 18 ]; then
 fi
 log "Node.js $(node -v)"
 
-# Step 2: Check gh CLI
+# Step 2: Check if already installed
+if command -v sunwuai &> /dev/null; then
+  CURRENT_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
+  echo ""
+  warn "sunwuai v${CURRENT_VERSION} is already installed"
+  echo ""
+  echo "  What would you like to do?"
+  echo "  1) Update to latest version"
+  echo "  2) Uninstall"
+  echo "  3) Cancel"
+  echo ""
+  read -p "  Choose [1/2/3]: " CHOICE
+
+  case $CHOICE in
+    1)
+      info "Updating sunwuai CLI..."
+      npm install -g github:ZJU-marketing/cli 2>&1
+      NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
+      log "Updated to sunwuai v${NEW_VERSION}"
+      echo ""
+      exit 0
+      ;;
+    2)
+      info "Uninstalling sunwuai CLI..."
+      npm uninstall -g sunwuai 2>&1
+      log "sunwuai uninstalled"
+      echo ""
+      exit 0
+      ;;
+    3)
+      info "Cancelled"
+      exit 0
+      ;;
+    *)
+      err "Invalid choice"
+      exit 1
+      ;;
+  esac
+fi
+
+# Step 3: Check gh CLI
 info "Checking GitHub CLI..."
 GH_CMD=""
 if command -v gh &> /dev/null; then
@@ -49,7 +89,7 @@ if [ -z "$GH_CMD" ]; then
 fi
 log "GitHub CLI found: $GH_CMD"
 
-# Step 3: Check auth & scopes
+# Step 4: Check auth & scopes
 info "Checking GitHub authentication..."
 AUTH_STATUS=$($GH_CMD auth status 2>&1 || true)
 
@@ -83,12 +123,12 @@ else
   fi
 fi
 
-# Step 4: Install CLI
+# Step 5: Install CLI
 info "Installing sunwuai CLI..."
 npm install -g github:ZJU-marketing/cli 2>&1
 log "sunwuai CLI installed"
 
-# Step 5: Verify
+# Step 6: Verify
 info "Verifying installation..."
 if command -v sunwuai &> /dev/null; then
   log "sunwuai $(sunwuai --version) installed successfully"
