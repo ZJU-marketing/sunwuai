@@ -34,19 +34,12 @@ if [ "$NODE_VERSION" -lt 18 ]; then
 fi
 log "Node.js $(node -v)"
 
-# Step 2: Check if already installed, auto-update
+# Step 2: Check if already installed
+ALREADY_INSTALLED=false
 if command -v sunwuai &> /dev/null; then
   CURRENT_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
-  warn "sunwuai v${CURRENT_VERSION} is already installed, updating..."
-  npm install -g github:ZJU-marketing/cli 2>&1
-  NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
-  if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
-    log "Already at latest version (v${NEW_VERSION})"
-  else
-    log "Updated: v${CURRENT_VERSION} → v${NEW_VERSION}"
-  fi
-  echo ""
-  exit 0
+  ALREADY_INSTALLED=true
+  warn "sunwuai v${CURRENT_VERSION} is already installed"
 fi
 
 # Step 3: Check gh CLI
@@ -98,10 +91,21 @@ else
   fi
 fi
 
-# Step 5: Install CLI
-info "Installing sunwuai CLI..."
-npm install -g github:ZJU-marketing/cli 2>&1
-log "sunwuai CLI installed"
+# Step 5: Install / Update CLI
+if [ "$ALREADY_INSTALLED" = true ]; then
+  info "Updating sunwuai CLI..."
+  npm install -g git+https://github.com/ZJU-marketing/cli.git 2>&1
+  NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
+  if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+    log "Already at latest version (v${NEW_VERSION})"
+  else
+    log "Updated: v${CURRENT_VERSION} → v${NEW_VERSION}"
+  fi
+else
+  info "Installing sunwuai CLI..."
+  npm install -g git+https://github.com/ZJU-marketing/cli.git 2>&1
+  log "sunwuai CLI installed"
+fi
 
 # Step 6: Verify
 info "Verifying installation..."
