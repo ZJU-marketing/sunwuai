@@ -98,6 +98,9 @@ info "Downloading latest CLI..."
 $GH_CMD repo clone ZJU-marketing/cli "$TMPDIR_CLI" -- --depth=1 2>&1
 cd "$TMPDIR_CLI" && npm install --production 2>&1
 
+# Clean up any broken previous install
+npm uninstall -g sunwuai 2>/dev/null || true
+
 if [ "$ALREADY_INSTALLED" = true ]; then
   info "Updating sunwuai CLI..."
   npm install -g . 2>&1
