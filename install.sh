@@ -95,7 +95,7 @@ fi
 TMPDIR_CLI="/tmp/sunwuai-cli-install"
 rm -rf "$TMPDIR_CLI"
 info "Downloading latest CLI..."
-git clone --depth=1 https://github.com/ZJU-marketing/cli.git "$TMPDIR_CLI" 2>&1
+$GH_CMD repo clone ZJU-marketing/cli "$TMPDIR_CLI" -- --depth=1 2>&1
 
 if [ "$ALREADY_INSTALLED" = true ]; then
   info "Updating sunwuai CLI..."
