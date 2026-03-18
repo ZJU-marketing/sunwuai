@@ -34,44 +34,19 @@ if [ "$NODE_VERSION" -lt 18 ]; then
 fi
 log "Node.js $(node -v)"
 
-# Step 2: Check if already installed
+# Step 2: Check if already installed, auto-update
 if command -v sunwuai &> /dev/null; then
   CURRENT_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
+  warn "sunwuai v${CURRENT_VERSION} is already installed, updating..."
+  npm install -g github:ZJU-marketing/cli 2>&1
+  NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
+  if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+    log "Already at latest version (v${NEW_VERSION})"
+  else
+    log "Updated: v${CURRENT_VERSION} → v${NEW_VERSION}"
+  fi
   echo ""
-  warn "sunwuai v${CURRENT_VERSION} is already installed"
-  echo ""
-  echo "  What would you like to do?"
-  echo "  1) Update to latest version"
-  echo "  2) Uninstall"
-  echo "  3) Cancel"
-  echo ""
-  read -p "  Choose [1/2/3]: " CHOICE
-
-  case $CHOICE in
-    1)
-      info "Updating sunwuai CLI..."
-      npm install -g github:ZJU-marketing/cli 2>&1
-      NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
-      log "Updated to sunwuai v${NEW_VERSION}"
-      echo ""
-      exit 0
-      ;;
-    2)
-      info "Uninstalling sunwuai CLI..."
-      npm uninstall -g sunwuai 2>&1
-      log "sunwuai uninstalled"
-      echo ""
-      exit 0
-      ;;
-    3)
-      info "Cancelled"
-      exit 0
-      ;;
-    *)
-      err "Invalid choice"
-      exit 1
-      ;;
-  esac
+  exit 0
 fi
 
 # Step 3: Check gh CLI
