@@ -94,7 +94,7 @@ fi
 # Step 5: Install / Update CLI
 if [ "$ALREADY_INSTALLED" = true ]; then
   info "Updating sunwuai CLI..."
-  GIT_CONFIG_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0 npm install -g git+https://github.com/ZJU-marketing/cli.git#main 2>&1
+  GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 npm install -g git+https://github.com/ZJU-marketing/cli.git#main 2>&1
   NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
   if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
     log "Already at latest version (v${NEW_VERSION})"
@@ -103,7 +103,7 @@ if [ "$ALREADY_INSTALLED" = true ]; then
   fi
 else
   info "Installing sunwuai CLI..."
-  GIT_CONFIG_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0 npm install -g git+https://github.com/ZJU-marketing/cli.git#main 2>&1
+  GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 npm install -g git+https://github.com/ZJU-marketing/cli.git#main 2>&1
   log "sunwuai CLI installed"
 fi
 
