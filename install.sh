@@ -120,10 +120,18 @@ rm -rf "$TMPDIR_CLI"
 
 # Step 6: Verify
 info "Verifying installation..."
+NPM_BIN="$(npm prefix -g)/bin"
 if command -v sunwuai &> /dev/null; then
   log "sunwuai $(sunwuai --version) installed successfully"
+elif [ -x "$NPM_BIN/sunwuai" ]; then
+  log "sunwuai $($NPM_BIN/sunwuai --version) installed successfully"
+  warn "npm global bin not in PATH. Add to your shell profile:"
+  echo "    export PATH=\"$NPM_BIN:\$PATH\""
 else
-  err "Installation failed. Try: npm install -g github:ZJU-marketing/cli"
+  err "Installation failed."
+  info "Debug: npm prefix = $(npm prefix -g)"
+  info "Debug: ls bin = $(ls $NPM_BIN/sunwu* 2>/dev/null || echo 'not found')"
+  info "Debug: npm ls -g sunwuai = $(npm ls -g sunwuai 2>/dev/null || echo 'not found')"
   exit 1
 fi
 
