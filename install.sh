@@ -96,14 +96,17 @@ TMPDIR_CLI="/tmp/sunwuai-cli-install"
 rm -rf "$TMPDIR_CLI"
 info "Downloading latest CLI..."
 $GH_CMD repo clone ZJU-marketing/cli "$TMPDIR_CLI" -- --depth=1 2>&1
-cd "$TMPDIR_CLI" && npm install --production 2>&1
+cd "$TMPDIR_CLI"
+
+# Pack and install globally (ensures dependencies are included)
+TARBALL=$(npm pack 2>/dev/null | tail -1)
 
 # Clean up any broken previous install
 npm uninstall -g sunwuai 2>/dev/null || true
 
 if [ "$ALREADY_INSTALLED" = true ]; then
   info "Updating sunwuai CLI..."
-  npm install -g . 2>&1
+  npm install -g "$TARBALL" 2>&1
   NEW_VERSION=$(sunwuai --version 2>/dev/null || echo "unknown")
   if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
     log "Already at latest version (v${NEW_VERSION})"
@@ -112,7 +115,7 @@ if [ "$ALREADY_INSTALLED" = true ]; then
   fi
 else
   info "Installing sunwuai CLI..."
-  npm install -g . 2>&1
+  npm install -g "$TARBALL" 2>&1
   log "sunwuai CLI installed"
 fi
 cd /
