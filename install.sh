@@ -15,6 +15,78 @@ err()  { echo -e "${RED}✖${NC} $1"; }
 
 REQUIRED_SCOPES="repo,project,workflow,read:org"
 
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+as_root() {
+  [ "$(id -u)" -eq 0 ]
+}
+
+pkg_install() {
+  local pkg="$1"
+
+  if have_cmd apt-get; then
+    info "Installing ${pkg} via apt-get..."
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y && apt-get install -y "$pkg"
+    return $?
+  fi
+
+  if have_cmd apt; then
+    info "Installing ${pkg} via apt..."
+    export DEBIAN_FRONTEND=noninteractive
+    apt update -y && apt install -y "$pkg"
+    return $?
+  fi
+
+  if have_cmd dnf; then
+    info "Installing ${pkg} via dnf..."
+    dnf install -y "$pkg"
+    return $?
+  fi
+
+  if have_cmd yum; then
+    info "Installing ${pkg} via yum..."
+    yum install -y "$pkg"
+    return $?
+  fi
+
+  if have_cmd zypper; then
+    info "Installing ${pkg} via zypper..."
+    zypper --non-interactive install "$pkg"
+    return $?
+  fi
+
+  return 1
+}
+
+ensure_pkg() {
+  local cmd="$1"
+  local pkg="$2"
+  local human_name="$3"
+  local install_hint="$4"
+
+  if have_cmd "$cmd"; then
+    return 0
+  fi
+
+  warn "${human_name} not found"
+
+  if as_root; then
+    if pkg_install "$pkg"; then
+      log "${human_name} installed"
+      return 0
+    fi
+    warn "Auto-install failed for ${human_name}"
+  else
+    warn "No root privileges; cannot auto-install ${human_name}"
+  fi
+
+  err "${human_name} is required. Install it manually: ${install_hint}"
+  exit 1
+}
+
 echo ""
 echo "  🐵 SunwuAI CLI Installer"
 echo "  ========================"
@@ -22,8 +94,8 @@ echo ""
 
 # Step 1: Check Node.js
 info "Checking Node.js..."
-if ! command -v node &> /dev/null; then
-  err "Node.js not found. Install: https://nodejs.org (>= 18)"
+if ! have_cmd node; then
+  err "Node.js not found. Please install Node.js >= 18 first: https://nodejs.org"
   exit 1
 fi
 
@@ -33,6 +105,12 @@ if [ "$NODE_VERSION" -lt 18 ]; then
   exit 1
 fi
 log "Node.js $(node -v)"
+
+# Step 1.5: Ensure base tools needed by installer exist
+info "Checking base tooling..."
+ensure_pkg git git "Git" "https://git-scm.com/downloads"
+ensure_pkg npm npm "npm" "https://nodejs.org"
+log "Base tooling ready"
 
 # Step 2: Check if already installed
 ALREADY_INSTALLED=false
@@ -44,15 +122,31 @@ fi
 
 # Step 3: Check gh CLI
 info "Checking GitHub CLI..."
+if ! have_cmd gh && [ ! -x /snap/bin/gh ]; then
+  warn "GitHub CLI not found"
+
+  if as_root; then
+    if pkg_install gh; then
+      log "GitHub CLI installed"
+    else
+      err "GitHub CLI install failed. Install manually: https://cli.github.com"
+      exit 1
+    fi
+  else
+    err "GitHub CLI not found. Install manually: https://cli.github.com"
+    exit 1
+  fi
+fi
+
 GH_CMD=""
-if command -v gh &> /dev/null; then
+if have_cmd gh; then
   GH_CMD="gh"
 elif [ -x /snap/bin/gh ]; then
   GH_CMD="/snap/bin/gh"
 fi
 
 if [ -z "$GH_CMD" ]; then
-  err "GitHub CLI not found. Install: https://cli.github.com"
+  err "GitHub CLI not found after installation. Install: https://cli.github.com"
   exit 1
 fi
 log "GitHub CLI found: $GH_CMD"
@@ -141,8 +235,22 @@ fi
 echo ""
 echo "  ✅ Installation complete!"
 echo ""
+
+echo "  Starting guided onboarding..."
+echo "  (Set SUNWUAI_SKIP_ONBOARD=1 to skip)"
+echo ""
+if [ "${SUNWUAI_SKIP_ONBOARD:-0}" != "1" ]; then
+  if command -v sunwuai >/dev/null 2>&1; then
+    sunwuai onboard --auto-fix || true
+  elif [ -x "$NPM_BIN/sunwuai" ]; then
+    "$NPM_BIN/sunwuai" onboard --auto-fix || true
+  fi
+fi
+
+echo ""
 echo "  Next steps:"
-echo "    sunwuai sync          # Sync memory + skills"
-echo "    sunwuai auth status   # Check auth status"
-echo "    sunwuai --help        # See all commands"
+echo "    gh auth login -s $REQUIRED_SCOPES   # if not logged in yet"
+echo "    sunwuai onboard --auto-fix          # rerun one-shot setup + checks"
+echo "    sunwuai sync                        # sync memory + skills"
+echo "    sunwuai --help                      # see all commands"
 echo ""
