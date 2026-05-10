@@ -189,7 +189,7 @@ fi
 TMPDIR_CLI="/tmp/sunwuai-cli-install"
 rm -rf "$TMPDIR_CLI"
 info "Downloading latest CLI..."
-$GH_CMD repo clone ZJU-marketing/cli "$TMPDIR_CLI" -- --depth=1 2>&1
+$GH_CMD repo clone ZJU-marketing/sunwu-cli "$TMPDIR_CLI" -- --depth=1 2>&1
 cd "$TMPDIR_CLI"
 
 # Pack and install globally (ensures dependencies are included)

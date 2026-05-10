@@ -2,61 +2,127 @@
 
 Team knowledge and skill distribution tool for SunwuAI agents.
 
-## Quick Install
+## Installation
+
+### Development
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ZJU-marketing/sunwuai/main/install.sh | bash
+cd cli
+npm install
+npm link
 ```
 
-This will:
-1. Check prerequisites (Node.js >= 18, GitHub CLI)
-2. Login to GitHub with required scopes (if needed)
-3. Install `sunwuai` CLI globally
-4. Ready to use
+### From GitHub
+
+```bash
+npm install -g github:ZJU-marketing/sunwu-cli
+```
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) >= 18
+- Node.js >= 18
 - [GitHub CLI](https://cli.github.com) (`gh`)
 - Git
-- Access to ZJU-marketing organization
+- OpenClaw (for memory indexing)
 
-## Usage
+## Quick Start
+
+1. **Login to GitHub with required scopes:**
 
 ```bash
-# Sync team memory and skills
-sunwuai sync
-
-# Check auth status
-sunwuai auth status
-
-# Memory operations
-sunwuai memory sync
-sunwuai memory status
-sunwuai memory search <query>
-
-# Skill operations
-sunwuai skill sync
-sunwuai skill list
-sunwuai skill info <name>
+sunwuai auth login
 ```
 
-## What It Does
+This will authenticate with GitHub and request the following scopes:
+- `repo` - Repository operations
+- `project` - GitHub Projects access
+- `workflow` - GitHub Actions
+- `read:org` - Organization info
 
-`sunwuai` is a lightweight CLI that distributes team knowledge to AI agents:
+2. **Sync team resources:**
 
-- **Memory** — Syncs shared team knowledge (architecture, members, processes) to your OpenClaw workspace
-- **Skills** — Syncs team-standard agent skills
-- **Auth** — Manages GitHub authentication with the right scopes
+```bash
+sunwuai sync
+```
 
-After running `sunwuai sync`, your workspace will have:
+This will:
+- Clone/update `sunwu-memory` to `~/.openclaw/workspace/memory/sunwu-memory/`
+- Clone/update `skills` to `~/.openclaw/workspace/sunwu/skills/`
+- Reindex memory for OpenClaw
+
+## Commands
+
+### Authentication
+
+```bash
+sunwuai auth login   # Login to GitHub with required scopes
+sunwuai auth status  # Check authentication status
+```
+
+### Sync All
+
+```bash
+sunwuai sync  # Sync both memory and skills
+```
+
+### Memory
+
+```bash
+sunwuai memory sync           # Sync team memory
+sunwuai memory status         # Show memory index status
+sunwuai memory search <query> # Search team memory
+```
+
+### Skills
+
+```bash
+sunwuai skill sync              # Sync all team skills from remote
+sunwuai skill list              # List available shared skills
+sunwuai skill install <name>    # Install one skill from shared repo
+sunwuai skill upgrade <name>    # Upgrade one installed skill
+sunwuai skill upgrade --all     # Upgrade all shared skills
+sunwuai skill create <name>     # Create a new skill in shared repo
+sunwuai skill publish <name>    # Publish/update a workspace skill to shared repo
+sunwuai skill push <name>       # Alias of publish
+```
+
+## Configuration
+
+Default configuration is in `config/default.json`:
+
+```json
+{
+  "repos": {
+    "memory": "ZJU-marketing/sunwu-memory",
+    "skills": "ZJU-marketing/sunwuai-skills"
+  },
+  "paths": {
+    "workspace": "~/.openclaw/workspace",
+    "memory": "memory/sunwu-memory",
+    "skillsDir": "skills"
+  }
+}
+```
+
+## Directory Structure
+
+After running `sunwuai sync`, your workspace will look like:
 
 ```
 ~/.openclaw/workspace/
 ├── memory/
-│   └── sunwu-memory/     # Team knowledge base
+│   └── sunwu-memory/     # Team memory (from ZJU-marketing/sunwu-memory)
+│       ├── agents/
+│       ├── architecture/
+│       ├── members/
+│       ├── process/
+│       ├── projects/
+│       └── roles/
 └── sunwu/
-    └── skills/           # Team agent skills
+    └── skills/           # Team skills (from ZJU-marketing/sunwuai-skills)
+        ├── skill-1/
+        ├── skill-2/
+        └── ...
 ```
 
 ## License

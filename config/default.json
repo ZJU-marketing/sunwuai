@@ -1,0 +1,18 @@
+{
+  "repos": {
+    "memory": "ZJU-marketing/sunwu-memory",
+    "skills": "ZJU-marketing/sunwuai-skills"
+  },
+  "home": "~/.sunwuai",
+  "paths": {
+    "workspace": "~/.openclaw/workspace",
+    "memoryLink": "memory/sunwuai-memory",
+    "skillsDir": "skills"
+  },
+  "scopes": [
+    "repo",
+    "project",
+    "workflow",
+    "read:org"
+  ]
+}
