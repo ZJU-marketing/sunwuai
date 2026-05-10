@@ -1,0 +1,31 @@
+{
+  "name": "sunwuai",
+  "version": "0.3.10",
+  "description": "SunwuAI CLI - Team knowledge and skill distribution tool",
+  "main": "src/index.js",
+  "bin": {
+    "sunwuai": "./bin/sunwuai.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sunwuai",
+    "cli",
+    "agent",
+    "knowledge"
+  ],
+  "author": "SunwuAI Team",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZJU-marketing/sunwu-cli.git"
+  }
+}
